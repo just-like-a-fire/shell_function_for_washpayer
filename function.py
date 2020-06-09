@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
+# 导包
+import datetime
+from apps.web.device.models import Device, DriverCode, Group
+from apps.web.dealer.models import Dealer, Merchant
+from apps.web.agent.models import Agent
+from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord
+from apps.web.report.ledger import Ledger
+from apps.web.dealer.define import DEALER_INCOME_SOURCE
+from apilib.monetary import RMB, VirtualCoin
+from bson.objectid import ObjectId
+
+
 # 分离logicalCode
 def output_dev_arr(type):
     with open('logicalCode.txt', 'r') as f:
