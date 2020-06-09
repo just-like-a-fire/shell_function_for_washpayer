@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-
-def output_dev_arr():
+# 分离logicalCode
+def output_dev_arr(type):
     with open('logicalCode.txt', 'r') as f:
         fileStr = f.read()
 
-    # 5位数
-    #r = r"(\d{5})"
-    # 6位数
-    r = r"(\d{6})"
-    # 4G模块
-    #r = r"(G\d{6})"
+    if type == '5':
+        r = r"(\d{5})"
+    elif type == '6':
+        r = r"(\d{6})"
+    elif type == 'G':
+        r = r"(G\d{6})"
+    else:
+        print 'type need send'
+        return
+
     targetArr = re.findall(r, fileStr)
     arr = map(lambda t: ''.join(t), targetArr)
 
     return arr
 
+# 分离iccid
 def output_iccid_arr():
     with open('iccid.txt', 'r') as f:
         fileStr = f.read()
