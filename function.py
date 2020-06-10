@@ -123,3 +123,38 @@ def write_as_txt(arr, name):
             f.write(_ + '\r\n')
     print 'done!'
 
+# 检测设备是否需要寄卡
+def is_need_new_sim(arr):
+    for _ in arr:
+        d = Device.objects(logicalCode=_).first()
+        dd = Device.get_dev(d.devNo)
+
+        # 不存在的设备跳过
+        if d is None:
+            continue
+
+        # 1.检测是否在线
+        if dd.online != 0:
+            continue
+
+        # 2.检测最近离线
+        if dd.offTime != 0:
+            lastOfflineTime = datetime.datetime.fromtimestamp(int(str(dd.offTime)[0:10])).strftime("%Y-%m-%d")
+        else:
+            lastOfflineTime = 0
+        
+        # 3.检测流量卡充值时间
+        simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'itmes.devNo': d.devNo, 'status':'Paid'})
+        if simRechargeRcds.count() > 0:
+            for _ in simRechargeRcds:
+                simRechargeTime = _.finishedTime.strftime("%Y-%m-%d")
+        else:
+            simRechargeTime = 0
+
+        # 4.检测设备过期时间
+        if d.simExpireDate is not None:
+            simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
+        else:
+            simExpireTime = d.expireDate.strftime("%Y-%m-%d")
+
+        print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
