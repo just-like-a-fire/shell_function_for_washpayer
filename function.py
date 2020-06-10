@@ -116,4 +116,10 @@ def create_public_merchant(username, accountCode, parentBankName, subBankName, m
     m.save()
     print 'done!'
 
+# 列表换行输出txt
+def write_as_txt(arr, name):
+    with open('output_%s.txt' % name, 'w') as f:
+        for _ in arr:
+            f.write(_ + '\r\n')
+    print 'done!'
 
