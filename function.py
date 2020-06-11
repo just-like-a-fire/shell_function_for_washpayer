@@ -144,10 +144,12 @@ def is_need_new_sim(arr):
             lastOfflineTime = 0
         
         # 3.检测流量卡充值时间
-        simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'itmes.devNo': d.devNo, 'status':'Paid'})
+        simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'status':'Paid'})
+        # 循环走完默认拿最后一次的充值时间
         if simRechargeRcds.count() > 0:
-            for _ in simRechargeRcds:
-                simRechargeTime = _.finishedTime.strftime("%Y-%m-%d")
+            for s in simRechargeRcds:
+                if _ in s.name:
+                    simRechargeTime = s.finishedTime.strftime("%Y-%m-%d")
         else:
             simRechargeTime = 0
 
