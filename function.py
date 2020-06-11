@@ -148,6 +148,7 @@ def is_need_new_sim(arr):
         # 循环走完默认拿最后一次的充值时间
         if simRechargeRcds.count() > 0:
             for s in simRechargeRcds:
+                # todo 少数情况有bug, 最好精确匹配
                 if _ in s.name:
                     simRechargeTime = s.finishedTime.strftime("%Y-%m-%d")
         else:
@@ -160,3 +161,41 @@ def is_need_new_sim(arr):
             simExpireTime = d.expireDate.strftime("%Y-%m-%d")
 
         print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
+
+# 删除乱注册的经销商
+def delete_dealer(username):
+    d = Dealer.objects(username=username)
+    if d.count() > 1:
+        print 'more than one _ %s' % username
+        return
+    elif d is None:
+        print 'no dealer _ %s' % username
+        return
+    else:
+        d = d.first()
+
+    ds = Device.objects(ownerId=str(d.id))
+    if ds.count() > 0:
+        print 'dealer has devices _ %s' % username
+        for _ in ds:
+            print _.logicalCode
+        return
+
+    gs = Group.objects(ownerId=str(d.id))
+    if gs.count() > 0:
+        print 'dealer has groups _ %s' % username
+        return
+
+    rs = RechargeRecord.objects(ownerId=str(d.id))
+    if rs.count() > 0:
+        print 'dealer has recharge records _ %s' % username
+        return
+
+    cs = ConsumeRecord.objects(ownerId=str(d.id))
+    if cs.count() > 0:
+        print 'dealer has consume records _ %s' % username
+        return
+
+    d.delete()
+    print 'dealer is deleted _ %s' % username
+
