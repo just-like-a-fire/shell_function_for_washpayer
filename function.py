@@ -6,12 +6,12 @@ import datetime
 from apps.web.device.models import Device, DriverCode, Group
 from apps.web.dealer.models import Dealer, Merchant
 from apps.web.agent.models import Agent
-from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord
+from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
 from apps.web.report.ledger import Ledger
 from apps.web.dealer.define import DEALER_INCOME_SOURCE
 from apilib.monetary import RMB, VirtualCoin
 from bson.objectid import ObjectId
-
+from django.core.cache import cache
 
 # 分离logicalCode
 def output_dev_arr(type):
@@ -125,9 +125,16 @@ def write_as_txt(arr, name):
 
 # 检测设备是否需要寄卡
 def is_need_new_sim(arr):
+    bbc = []
     for _ in arr:
         d = Device.objects(logicalCode=_).first()
-        dd = Device.get_dev(d.devNo)
+
+        try:
+            dd = Device.get_dev(d.devNo)
+        except Exception as e:
+            bbc.append(_)
+            print _
+            continue
 
         # 不存在的设备跳过
         if d is None:
@@ -154,13 +161,20 @@ def is_need_new_sim(arr):
         else:
             simRechargeTime = 0
 
-        # 4.检测设备过期时间
-        if d.simExpireDate is not None:
-            simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
-        else:
-            simExpireTime = d.expireDate.strftime("%Y-%m-%d")
+        try:
+            # 4.检测设备过期时间
+            if d.simExpireDate is not None:
+                simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
+            else:
+                simExpireTime = d.expireDate.strftime("%Y-%m-%d")
+        except Exception as e:
+            bbc.append(_)
+            print _
+            continue
 
         print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
+        bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
+    return bbc
 
 # 删除乱注册的经销商
 def delete_dealer(username):
