@@ -3,8 +3,8 @@
 
 # 导包
 import datetime
-from apps.web.device.models import Device, DriverCode, Group
-from apps.web.dealer.models import Dealer, Merchant
+from apps.web.device.models import Device, DriverCode, Group, SIMcard
+from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord
 from apps.web.agent.models import Agent
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
 from apps.web.report.ledger import Ledger
@@ -57,11 +57,12 @@ def fifteen_fee(logicalCode):
         _.trafficCardCost = None
         _.save()
         Device.invalid_device_cache(_.devNo)
+    print 'done!'
 
 # 解除设备充值
 def unlock_dev_recharge(logicalCode):
     d = Device.objects(logicalCode=logicalCode).first()
-    print d.simStatus
+    print 'before_%s' % d.simStatus
     d.simStatus = u'chargedUnupdated'
     d.save()
     Device.invalid_device_cache(d.devNo)
@@ -77,6 +78,7 @@ def reset_dealer_password(username):
     d.set_password('e10adc3949ba59abbe56e057f20f883e')
     d.save()
     d.unlock_login()
+    print 'done!'
 
 # 重置代理商下面的设备年费
 def reset_agent_device_traffic_card_cost(username):
@@ -212,4 +214,14 @@ def delete_dealer(username):
 
     d.delete()
     print 'dealer is deleted _ %s' % username
+
+# 验证SIM卡是否是上个月底过期的
+def verify_last_month_sim(arr, year, month, day):
+    arr_list = []
+    for _ in arr:
+        s = SIMcard.objects(iccid=_).first()
+        if s is not None and s.expireTime == datetime.datetime(year, month, day, 0, 0, 0):
+            print s.imsi
+            arr_list.append(s.imsi)
+    return arr_list
 
