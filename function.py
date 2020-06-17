@@ -2,8 +2,9 @@
 #!/usr/bin/env python
 
 # 导包
+import re
 import datetime
-from apps.web.device.models import Device, DriverCode, Group, SIMcard
+from apps.web.device.models import Device, DriverCode, Group, SIMCard
 from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord
 from apps.web.agent.models import Agent
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
@@ -219,9 +220,9 @@ def delete_dealer(username):
 def verify_last_month_sim(arr, year, month, day):
     arr_list = []
     for _ in arr:
-        s = SIMcard.objects(iccid=_).first()
+        s = SIMCard.objects(iccid=_).first()
         if s is not None and s.expireTime == datetime.datetime(year, month, day, 0, 0, 0):
             print s.imsi
             arr_list.append(s.imsi)
     return arr_list
-
+    
