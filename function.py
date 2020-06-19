@@ -185,7 +185,7 @@ def delete_dealer(username):
     if d.count() > 1:
         print 'more than one _ %s' % username
         return
-    elif d is None:
+    elif d.count() == 0:
         print 'no dealer _ %s' % username
         return
     else:
@@ -225,4 +225,27 @@ def verify_last_month_sim(arr, year, month, day):
             print s.imsi
             arr_list.append(s.imsi)
     return arr_list
+
+# 重置充电卡
+def reset_recharge_card(cardNo):
+    c = Card.objects(cardNo=cardNo)
+    if c.count() > 1:
+        print 'more than 1'
+        return
+    elif c.count() == 0:
+        print 'no card'
+        return
+    else:
+        c = c.first()
+
+    c.openId = u''
+    c.nickName = u''
+    c.status = u'active'
+    c.frozen = False
+    c.phone = u''
+    c.cardName = u''
+    c.managerialAppId = u''
+    c.managerialOpenId = u''
+    c.save()
+    print 'done!'
     
