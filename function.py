@@ -5,7 +5,7 @@
 import re
 import datetime
 from apps.web.device.models import Device, DriverCode, Group, SIMCard
-from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord
+from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord, DealerRechargeRecord
 from apps.web.agent.models import Agent
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
 from apps.web.report.ledger import Ledger
@@ -127,7 +127,7 @@ def write_as_txt(arr, name):
     print 'done!'
 
 # 检测设备是否需要寄卡
-def is_need_new_sim(arr):
+def is_need_new_sim(arr, callback=None):
     bbc = []
     for _ in arr:
         d = Device.objects(logicalCode=_).first()
@@ -177,6 +177,10 @@ def is_need_new_sim(arr):
 
         print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
         bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
+
+        if callback is not None:
+            callback(bbc, '%s' % str(random.randint(1,100)))
+
     return bbc
 
 # 删除乱注册的经销商
@@ -217,13 +221,17 @@ def delete_dealer(username):
     print 'dealer is deleted _ %s' % username
 
 # 验证SIM卡是否是上个月底过期的
-def verify_last_month_sim(arr, year, month, day):
+def verify_last_month_sim(arr, year, month, day, callback=None):
     arr_list = []
     for _ in arr:
         s = SIMCard.objects(iccid=_).first()
         if s is not None and s.expireTime == datetime.datetime(year, month, day, 0, 0, 0):
             print s.imsi
             arr_list.append(s.imsi)
+
+    if callback is not None:
+        callback(bbc, '%s' % str(random.randint(1,100)))
+
     return arr_list
 
 # 重置充电卡
@@ -248,4 +256,35 @@ def reset_recharge_card(cardNo):
     c.managerialOpenId = u''
     c.save()
     print 'done!'
+
+# 解锁续充
+def unlock_payable_while_busy(logicalCode):
+    d = Device.objects(logicalCode=logicalCode).first()
+    if d is None:
+        print 'no device'
+        return
+
+    if d.devType == {}:
+        print 'no register'
+        return
+
+    d.devType['payableWhileBusy'] = True
+    d.save()
+    Device.invalid_device_cache(d.devNo)
     
+# 里歌的端午节充值卡优惠批量设置
+def leeger_group_card_discount(dealerId, passedGroupIdList, ruleDict):
+    d = Dealer.objects(id=dealerId).first()
+    if d is None:
+        print 'dealer is None'
+        return
+
+    gs = Group.objects(ownerId=dealerId)
+    for _ in gs:
+        if str(_.id) in passedGroupIdList:
+            print _.groupName
+            continue
+        else:
+            _.cardRuleDict = ruleDict
+            _.save()
+    print 'done!'
