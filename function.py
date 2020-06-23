@@ -4,7 +4,7 @@
 # 导包
 import re
 import datetime
-from apps.web.device.models import Device, DriverCode, Group, SIMCard
+from apps.web.device.models import Device, DriverCode, Group, SIMCard, GroupCacheMgr
 from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord, DealerRechargeRecord
 from apps.web.agent.models import Agent
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
@@ -274,6 +274,8 @@ def unlock_payable_while_busy(logicalCode):
     
 # 里歌的端午节充值卡优惠批量设置
 def leeger_group_card_discount(dealerId, passedGroupIdList, ruleDict):
+
+    # 例: leeger_group_card_discount('5bbc30de8732d662044c2d73', ['5cff6be20030485cf9ed481e', '5d64e56e003048437d4721f1', '5dc7be3de305f75cd473233d', '5d3289890030480d882827ed', '5d3cff01003048414826caef', '5d47d59c0030485cb7910183', '5d5dff930030483729291d26', '5d7f2f05e305f75cd4997189', '5d7f32aae305f75cd49c573b', '5d7f4555e305f75cd4ab1364'], {"50":60.0, "100":130.0})
     d = Dealer.objects(id=dealerId).first()
     if d is None:
         print 'dealer is None'
@@ -281,10 +283,12 @@ def leeger_group_card_discount(dealerId, passedGroupIdList, ruleDict):
 
     gs = Group.objects(ownerId=dealerId)
     for _ in gs:
-        if str(_.id) in passedGroupIdList:
+        groupId = str(_.id)
+        if groupId in passedGroupIdList:
             print _.groupName
             continue
         else:
             _.cardRuleDict = ruleDict
             _.save()
+            GroupCacheMgr.invalid_group_cache(groupId)
     print 'done!'
