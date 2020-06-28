@@ -94,15 +94,19 @@ def reset_agent_device_traffic_card_cost(username):
     print 'done!'
 
 # 创建对公账户
-def create_public_merchant(username, accountCode, parentBankName, subBankName, merchantName):
+def create_public_merchant(username, accountCode, parentBankName, subBankName, merchantName, dealerId=None):
     # 例: create_public_merchant('18458353670', u'33050163742700000876', u'中国建设银行', u'中国建设银行嘉善支行营业部', u'嘉善县博源建设管理有限公司')
 
-    d = Dealer.objects(username=username)
-    if d.count() > 1:
-        print('more than 1')
-        return
+    if dealerId is not None:
+        d = Dealer.objects(id=dealerId).first()
     else:
-        d = d.first()
+        d = Dealer.objects(username=username)
+        if d.count() > 1:
+            print('more than 1')
+            return
+        else:
+            d = d.first()
+
     mm = Merchant.objects(ownerId=str(d.id)).first()
     if mm is not None:
         print('existed')
@@ -121,7 +125,7 @@ def create_public_merchant(username, accountCode, parentBankName, subBankName, m
 
 # 列表换行输出txt
 def write_as_txt(arr, name):
-    with open('output_%s.txt' % name, 'w') as f:
+    with open('out_%s.txt' % name, 'w') as f:
         for _ in arr:
             f.write(_ + '\r\n')
     print 'done!'
