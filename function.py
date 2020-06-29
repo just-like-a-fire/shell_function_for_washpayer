@@ -109,8 +109,9 @@ def create_public_merchant(username, accountCode, parentBankName, subBankName, m
 
     mm = Merchant.objects(ownerId=str(d.id)).first()
     if mm is not None:
-        print('existed')
-        return
+        mm.ownerId = u''
+        mm.save()
+        print 'indeed.'
     m = Merchant()
     m.id = ObjectId()
     m.accountType = u'public'
