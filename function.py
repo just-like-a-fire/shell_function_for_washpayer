@@ -224,6 +224,7 @@ def delete_dealer(username):
 
     d.delete()
     print 'dealer is deleted _ %s' % username
+    return 1
 
 # 验证SIM卡是否是上个月底过期的
 def verify_last_month_sim(arr, year, month, day, callback=None):
@@ -297,3 +298,29 @@ def leeger_group_card_discount(dealerId, passedGroupIdList, ruleDict):
             _.save()
             GroupCacheMgr.invalid_group_cache(groupId)
     print 'done!'
+
+# 修改经销商账号
+def change_dealer_username(u1,u2, callback=None):
+    # callback传入delete_dealer
+    d1 = Dealer.objects(username=u1)
+    if d1.count() == 0:
+        print 'u1 no dealer'
+    elif d1.count() > 1:
+        print 'u1 has more than 1 dealers'
+    else:
+        d1 = d1.first()
+
+    d2 = Dealer.objects(username=u2)
+    if d2.count() != 0:
+        print 'not law'
+        if callback is not None:
+            result = callback(u2)
+            if result == 1:
+                d1.username = u2
+                d1.save()
+                print 'done!'
+    else:
+        d1.username = u2
+        d1.save()
+        print 'done!'
+
