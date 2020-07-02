@@ -305,8 +305,10 @@ def change_dealer_username(u1,u2, callback=None):
     d1 = Dealer.objects(username=u1)
     if d1.count() == 0:
         print 'u1 no dealer'
+        return
     elif d1.count() > 1:
         print 'u1 has more than 1 dealers'
+        return
     else:
         d1 = d1.first()
 
