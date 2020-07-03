@@ -184,8 +184,8 @@ def is_need_new_sim(arr, callback=None):
         print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
         bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
 
-        if callback is not None:
-            callback(bbc, '%s' % str(random.randint(1,100)))
+    if callback is not None:
+        callback(bbc, '%s' % str(random.randint(1,100)))
 
     return bbc
 
