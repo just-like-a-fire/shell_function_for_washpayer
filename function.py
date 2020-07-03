@@ -3,6 +3,7 @@
 
 # 导包
 import re
+import random
 import datetime
 from apps.web.device.models import Device, DriverCode, Group, SIMCard, GroupCacheMgr
 from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord, DealerRechargeRecord
