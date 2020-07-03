@@ -133,6 +133,7 @@ def write_as_txt(arr, name):
 
 # 检测设备是否需要寄卡
 def is_need_new_sim(arr, callback=None):
+    # callback传write_as_txt
     bbc = []
     for _ in arr:
         d = Device.objects(logicalCode=_).first()
@@ -228,6 +229,7 @@ def delete_dealer(username):
 
 # 验证SIM卡是否是上个月底过期的
 def verify_last_month_sim(arr, year, month, day, callback=None):
+    # callback传bbc
     arr_list = []
     for _ in arr:
         s = SIMCard.objects(iccid=_).first()
@@ -320,9 +322,9 @@ def change_dealer_username(u1,u2, callback=None):
             if result == 1:
                 d1.username = u2
                 d1.save()
-                print 'done!'
+                print 'change success!'
     else:
         d1.username = u2
         d1.save()
-        print 'done!'
+        print 'change success!'
 
