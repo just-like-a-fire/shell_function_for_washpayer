@@ -83,13 +83,13 @@ def reset_dealer_password(username):
     print 'done!'
 
 # 重置代理商下面的设备年费
-def reset_agent_device_traffic_card_cost(username):
+def reset_agent_device_traffic_card_cost(username, trafficFee=None):
     a = Agent.objects(username=username).first()
     ds = Dealer.objects(agentId=str(a.id))
     for _ in ds:
         dds = Device.objects(ownerId=str(_.id))
         for dd in dds:
-            dd.trafficCardCost = None
+            dd.trafficCardCost = RMB(str(trafficFee) + '.00')
             dd.save()
             Device.invalid_device_cache(dd.devNo)
     print 'done!'
@@ -137,53 +137,56 @@ def is_need_new_sim(arr, callback=None):
     # callback传write_as_txt
     bbc = []
     for _ in arr:
-        d = Device.objects(logicalCode=_).first()
-
         try:
-            dd = Device.get_dev(d.devNo)
-        except Exception as e:
-            bbc.append(_)
-            print _
-            continue
+            d = Device.objects(logicalCode=_).first()
 
-        # 不存在的设备跳过
-        if d is None:
-            continue
+            try:
+                dd = Device.get_dev(d.devNo)
+            except Exception as e:
+                bbc.append(_)
+                print _
+                continue
 
-        # 1.检测是否在线
-        if dd.online != 0:
-            continue
+            # 不存在的设备跳过
+            if d is None:
+                continue
 
-        # 2.检测最近离线
-        if dd.offTime != 0:
-            lastOfflineTime = datetime.datetime.fromtimestamp(int(str(dd.offTime)[0:10])).strftime("%Y-%m-%d")
-        else:
-            lastOfflineTime = 0
-        
-        # 3.检测流量卡充值时间
-        simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'status':'Paid'})
-        # 循环走完默认拿最后一次的充值时间
-        if simRechargeRcds.count() > 0:
-            for s in simRechargeRcds:
-                # todo 少数情况有bug, 最好精确匹配
-                if _ in s.name:
-                    simRechargeTime = s.finishedTime.strftime("%Y-%m-%d")
-        else:
-            simRechargeTime = 0
+            # 1.检测是否在线
+            if dd.online != 0:
+                continue
 
-        try:
-            # 4.检测设备过期时间
-            if d.simExpireDate is not None:
-                simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
+            # 2.检测最近离线
+            if dd.offTime != 0:
+                lastOfflineTime = datetime.datetime.fromtimestamp(int(str(dd.offTime)[0:10])).strftime("%Y-%m-%d")
             else:
-                simExpireTime = d.expireDate.strftime("%Y-%m-%d")
-        except Exception as e:
-            bbc.append(_)
-            print _
-            continue
+                lastOfflineTime = 0
+            
+            # 3.检测流量卡充值时间
+            simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'status':'Paid'})
+            # 循环走完默认拿最后一次的充值时间
+            if simRechargeRcds.count() > 0:
+                for s in simRechargeRcds:
+                    # todo 少数情况有bug, 最好精确匹配
+                    if _ in s.name:
+                        simRechargeTime = s.finishedTime.strftime("%Y-%m-%d")
+            else:
+                simRechargeTime = 0
 
-        print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
-        bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
+            try:
+                # 4.检测设备过期时间
+                if d.simExpireDate is not None:
+                    simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
+                else:
+                    simExpireTime = d.expireDate.strftime("%Y-%m-%d")
+            except Exception as e:
+                bbc.append(_)
+                print _
+                continue
+
+            print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
+            bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
+        except Exception as e:
+            print e
 
     if callback is not None:
         callback(bbc, '%s' % str(random.randint(1,100)))
