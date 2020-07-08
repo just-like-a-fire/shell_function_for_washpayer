@@ -83,13 +83,13 @@ def reset_dealer_password(username):
     print 'done!'
 
 # 重置代理商下面的设备年费
-def reset_agent_device_traffic_card_cost(username, trafficFee=None):
+def reset_agent_device_traffic_card_cost(username):
     a = Agent.objects(username=username).first()
     ds = Dealer.objects(agentId=str(a.id))
     for _ in ds:
         dds = Device.objects(ownerId=str(_.id))
         for dd in dds:
-            dd.trafficCardCost = RMB(str(trafficFee) + '.00')
+            dd.trafficCardCost = None
             dd.save()
             Device.invalid_device_cache(dd.devNo)
     print 'done!'
