@@ -8,6 +8,7 @@ import datetime
 from apps.web.device.models import Device, DriverCode, Group, SIMCard, GroupCacheMgr
 from apps.web.dealer.models import Dealer, Merchant, WithdrawRecord, DealerRechargeRecord
 from apps.web.agent.models import Agent
+from apps.web.management.models import Manager
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
 from apps.web.report.ledger import Ledger
 from apps.web.dealer.define import DEALER_INCOME_SOURCE
