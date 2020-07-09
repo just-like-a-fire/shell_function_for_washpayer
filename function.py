@@ -70,13 +70,22 @@ def unlock_dev_recharge(logicalCode):
     Device.invalid_device_cache(d.devNo)
 
 # 重置经销商账号
-def reset_dealer_password(username):
-    d = Dealer.objects(username=username)
-    if d.count() > 1:
-        print('more than 1')
-        return
+def reset_dealer_password(username, role):
+    if role == 'dealer':
+        d = Dealer.objects(username=username)
+        if d.count() > 1:
+            print('more than 1')
+            return
+        else:
+            d = d.first()
+    elif role == 'agent':
+        d = Agent.objects(username=username).first()
+    elif role == 'manager':
+        d = Manager.objects(username=username).first()
     else:
-        d = d.first()
+        print 'wrong role'
+        return
+        
     d.set_password('e10adc3949ba59abbe56e057f20f883e')
     d.save()
     d.unlock_login()
