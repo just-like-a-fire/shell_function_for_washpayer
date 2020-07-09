@@ -69,8 +69,8 @@ def unlock_dev_recharge(logicalCode):
     d.save()
     Device.invalid_device_cache(d.devNo)
 
-# 重置经销商账号
-def reset_dealer_password(username, role):
+# 重置账号
+def reset_role_password(username, role):
     if role == 'dealer':
         d = Dealer.objects(username=username)
         if d.count() > 1:
@@ -85,7 +85,7 @@ def reset_dealer_password(username, role):
     else:
         print 'wrong role'
         return
-        
+
     d.set_password('e10adc3949ba59abbe56e057f20f883e')
     d.save()
     d.unlock_login()
