@@ -342,3 +342,10 @@ def change_dealer_username(u1,u2, callback=None):
         d1.save()
         print 'change success!'
 
+# 设置设备的流量卡过期时间
+def set_device_sim_expire_time(logicalCode, year, month, day):
+    d = Device.objects(logicalCode=logicalCode).first()
+    d.simExpireDate = datetime.datetime(year, month, day, 0, 0, 0)
+    d.save()
+    Device.invalid_device_cache(d.devNo)
+    print 'done!'
