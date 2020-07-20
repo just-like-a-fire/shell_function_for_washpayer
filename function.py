@@ -172,7 +172,7 @@ def is_need_new_sim(arr, callback=None):
                 lastOfflineTime = 0
             
             # 3.检测流量卡充值时间
-            simRechargeRcds = DealerRechargeRecord.objects(__raw__={'dealerId': d.ownerId, 'status':'Paid'})
+            simRechargeRcds = DealerRechargeRecord.objects(__raw__={'name': d.ownerId, 'status':'Paid', 'name':{'$regex':str(_)}})
             # 循环走完默认拿最后一次的充值时间
             if simRechargeRcds.count() > 0:
                 for s in simRechargeRcds:
@@ -186,8 +186,10 @@ def is_need_new_sim(arr, callback=None):
                 # 4.检测设备过期时间
                 if d.simExpireDate is not None:
                     simExpireTime = d.simExpireDate.strftime("%Y-%m-%d")
-                else:
+                elif d.expireDate is not None:
                     simExpireTime = d.expireDate.strftime("%Y-%m-%d")
+                else:
+                    simExpireTime = 'None'
             except Exception as e:
                 bbc.append(_)
                 print _
@@ -348,4 +350,17 @@ def set_device_sim_expire_time(logicalCode, year, month, day):
     d.simExpireDate = datetime.datetime(year, month, day, 0, 0, 0)
     d.save()
     Device.invalid_device_cache(d.devNo)
+    print 'done!'
+
+# 修改设备类型
+def change_dev_type(arr, code):
+    for _ in arr:
+        d = Device.objects(logicalCode=_).first()
+        if d.devType == {}:
+            print 'device is not register %s' % _
+            continue
+        else:
+            d.devType['code'] = code
+            d.save()
+            Device.invalid_device_cache(d.devNo)
     print 'done!'
