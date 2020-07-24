@@ -364,3 +364,14 @@ def change_dev_type(arr, code):
             d.save()
             Device.invalid_device_cache(d.devNo)
     print 'done!'
+
+# 热加载最新驱动
+def hot_load_new_driver(code):
+    d = DriverCode.objects(code=code).first()
+    d.adapterVer = str(float(d.adapterVer) + 0.1)
+    d.eventerVer = str(float(d.eventerVer) + 0.1)
+    d.save()
+    print DriverCode.get_type_info(code)
+    cache.delete('devType%s' % code)
+    print DriverCode.get_type_info(code)
+    print 'done!'
