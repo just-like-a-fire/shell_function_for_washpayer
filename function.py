@@ -375,3 +375,10 @@ def hot_load_new_driver(code):
     cache.delete('devType%s' % code)
     print DriverCode.get_type_info(code)
     print 'done!'
+
+# 未分账订单进行分账
+def ledger_execute(wxOrderNo):
+    r = RechargeRecord.objects(wxOrderNo=wxOrderNo).first()
+    group = Group.get_group(r.groupId)
+    ledger = Ledger(DEALER_INCOME_SOURCE.RECHARGE, r, group)
+    ledger.execute(journal=False, stats=True, check=False)
