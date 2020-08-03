@@ -382,3 +382,15 @@ def ledger_execute(wxOrderNo):
     group = Group.get_group(r.groupId)
     ledger = Ledger(DEALER_INCOME_SOURCE.RECHARGE, r, group)
     ledger.execute(journal=False, stats=True, check=False)
+
+# 根据手机号码,获取关联id
+def get_ids_from_phone(phone):
+    ds = Dealer.objects(username=phone)
+    a = Agent.objects(username=phone).first()
+    m = Manager.objects(username=phone).first()
+    tempDict = {}
+    arr = [str(_.id) + '_' + _.agentId for _ in ds]
+    tempDict.update({'dealer': arr})
+    tempDict.update({'agent': str(a.id) if a is not None else ''})
+    tempDict.update({'manager': str(m.id) if m is not None else ''})
+    return tempDict
