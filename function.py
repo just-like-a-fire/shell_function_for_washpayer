@@ -163,7 +163,9 @@ def is_need_new_sim(arr, callback=None):
 
             # 1.检测是否在线
             if dd.online != 0:
-                continue
+                onlineStatus = 1
+            else:
+                onlineStatus = 0
 
             # 2.检测最近离线
             if dd.offTime != 0:
@@ -195,8 +197,8 @@ def is_need_new_sim(arr, callback=None):
                 print _
                 continue
 
-            print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime)
-            bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime)
+            print (_, 'LAST_%s' % lastOfflineTime, 'EXP_%s' % simExpireTime, 'RCG_%s' % simRechargeTime, 'online_%s' % onlineStatus)
+            bbc.append(_ + '   ' + '   ' + 'LAST_%s' % lastOfflineTime + '   ' + '   ' + 'EXP_%s' % simExpireTime + '   ' + '   ' + 'RCG_%s' % simRechargeTime + '   ' + '   ' + 'online_%s' % onlineStatus)
         except Exception as e:
             print e
 
