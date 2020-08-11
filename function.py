@@ -12,6 +12,7 @@ from apps.web.management.models import Manager
 from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, CardRechargeOrder
 from apps.web.report.ledger import Ledger
 from apps.web.dealer.define import DEALER_INCOME_SOURCE
+from apps.web.common.models import OperatorLog
 from apilib.monetary import RMB, VirtualCoin
 from bson.objectid import ObjectId
 from django.core.cache import cache
@@ -69,6 +70,8 @@ def unlock_dev_recharge(logicalCode):
     d.simStatus = u'chargedUnupdated'
     d.save()
     Device.invalid_device_cache(d.devNo)
+    OperatorLog.manual_change_dealer_recharge(logicalCode, {'iccid': d.iccid, 'devNo': d.devNo})
+    print 'done!'
 
 # 重置账号
 def reset_role_password(username, role):
