@@ -399,3 +399,24 @@ def get_ids_from_phone(phone):
     tempDict.update({'agent': str(a.id) if a is not None else ''})
     tempDict.update({'manager': str(m.id) if m is not None else ''})
     return tempDict
+
+# 检测经销商是否刷单
+def whether_to_brush(username):
+    bbc = []
+    d = Dealer.objects(username=username)
+    if d.count() > 1:
+        print 'more than one _ %s' % username
+        return
+    elif d.count() == 0:
+        print 'no dealer _ %s' % username
+        return
+    else:
+        d = d.first()
+
+    for _ in range(1,101):
+        dstr = "Device.objects(__raw__={'washConfig.%s.price': {'$gte': 50}, 'ownerId': str(d.id)})" % _
+        rst = eval(dstr)
+        if rst.count() != 0:
+            for i in rst:
+                bbb.append(i.logicalCode)
+    return bbc
