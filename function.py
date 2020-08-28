@@ -283,6 +283,9 @@ def reset_recharge_card(cardNo):
     c.cardName = u''
     c.managerialAppId = u''
     c.managerialOpenId = u''
+    c.dealerId = u''
+    c.groupId = u''
+    c.devNo = u''
     c.save()
     print 'done!'
 
@@ -317,6 +320,7 @@ def leeger_group_card_discount(dealerId, passedGroupIdList, ruleDict):
             print _.groupName
             continue
         else:
+            _.ruleDict = ruleDict
             _.cardRuleDict = ruleDict
             _.save()
             GroupCacheMgr.invalid_group_cache(groupId)
@@ -420,3 +424,33 @@ def whether_to_brush(username):
             for i in rst:
                 bbb.append(i.logicalCode)
     return bbc
+
+# 话术
+
+# 01 过期续费
+# 您的设备在{}过期的, 最近才进行续费{}, 过期充值的话流量卡已经注销了, 需要给您寄新卡换上去才能正常使用.
+# 由于您是过期续费的, 我们不包邮, 默认发顺丰到付, 或者可以选择圆通寄付 10元
+
+# 02 串口不通
+# 设备是在线的, 但是发命令主板没有回应, 我先远程重启一下模块试试
+# 远程重启模块没用, 建议断电重启一下主板试试
+# 如果重启主板也没用的话, 建议替换法排查一下, 把这个模块换到旁边正常运行的设备上, 看一下能否启动旁边正常的设备, 这样可以判断模块是否正常
+
+# 03 设备离线
+# 离线, 信号值很差, 流量卡正常的, 信号差导致的离线, 信号只有{}, 看一下天线有没有问题, 如果天线正常, 可能是当地2G网络很差
+# 设备是离线的, 最近离线时间是{}, 流量卡是正常的, 看一下模块信号灯是如何闪烁
+"""
+看一下模块信号灯能否快闪, 如果不是快闪, 按照以下方式排查一下
+首先把模块外壳打开
+1. 断电重启试一下
+2. 把天线重插以及sim卡重插之后, 断电重启试一下
+"""
+# 设备是离线的, 刚刚离线的, 不超过15分钟, 所以在后台看到还是在线的缓存, 这个需要看一下二维码模块信号灯是如何闪烁的
+
+# 04 怎么登录PC端后台
+# 通过电脑浏览器打开http://www.washpayer.com/dealerAdmin/index.html, 然后进行登录即可
+
+# 05 提现以及对公银行账户信息
+# 客户提现可以提现到银行卡里面, 在后台可以绑定银行卡, 但是只支持对私银行.
+# 对公银行的绑定, 需要客户把对公银行信息以及经销商账号提供给我, 我在后台给客户绑定
+# 提现到账时间: 微信 -> 即时到账, 对私银行 -> 1~3天到账, 对公银行 -> 月底到账一次
