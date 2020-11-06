@@ -13,6 +13,7 @@ from apps.web.user.models import Card, MyUser, ConsumeRecord, RechargeRecord, Ca
 from apps.web.report.ledger import Ledger
 from apps.web.dealer.define import DEALER_INCOME_SOURCE
 from apps.web.common.models import OperatorLog
+from apps.web.core.models import WechatPayApp
 from apilib.monetary import RMB, VirtualCoin
 from bson.objectid import ObjectId
 from django.core.cache import cache
@@ -59,6 +60,7 @@ def fifteen_fee(logicalCode):
     print ds.count()
     for _ in ds:
         _.trafficCardCost = None
+        _.annualTrafficCost = None
         _.save()
         Device.invalid_device_cache(_.devNo)
     print 'done!'
@@ -96,13 +98,13 @@ def reset_role_password(username, role):
     print 'done!'
 
 # 重置代理商下面的设备年费
-def reset_agent_device_traffic_card_cost(username):
-    a = Agent.objects(username=username).first()
-    ds = Dealer.objects(agentId=str(a.id))
+def reset_agent_device_traffic_card_cost(aid):
+    ds = Dealer.objects(agentId=str(aid))
     for _ in ds:
         dds = Device.objects(ownerId=str(_.id))
         for dd in dds:
             dd.trafficCardCost = None
+            dd.annualTrafficCost = None
             dd.save()
             Device.invalid_device_cache(dd.devNo)
     print 'done!'
@@ -424,6 +426,60 @@ def whether_to_brush(username):
             for i in rst:
                 bbb.append(i.logicalCode)
     return bbc
+
+# 导出没有给代理商分账的流量卡充值数据
+def export_txt_for_undivided_sim_to_agent(username):
+    a = Agent.objects(username=username).first()
+    ds = Dealer.objects(agentId=str(a.id))
+    abc = 0
+    dataList = []
+    for _ in ds:
+        drrs = DealerRechargeRecord.objects(dealerId=str(_.id), status='Paid')
+        for drr in drrs:
+            totalFee = drr.totalFee / 100
+            items = len(drr.items)
+            earned = totalFee - items * 15
+            dataList.append({
+                'DealerPhone': _.username,
+                'OrderNo': drr.orderNo,
+                'ItemsNum': items,
+                'TotalFee': totalFee,
+                'AgentEarned': earned,
+                'OrderTime': drr.finishedTime
+            })
+
+    for _ in dataList:
+        abc += _['AgentEarned']
+    print abc
+
+    dataList = [str(_) for _ in dataList]
+
+    return dataList
+
+# 查询代理商下所有设备和流量卡状态
+def find_agent_device_and_sim_status(username):
+    bbc = []
+    a = Agent.objects(username=username).first()
+    if a is None:
+        print 'agent is None'
+        return
+
+    ds = Dealer.objects(agentId=str(a.id))
+    for _ in ds:
+        dds = Device.objects(ownerId=str(_.id))
+        if dds.count == 0:
+            continue
+        for dd in dds:
+            try:
+                s = SIMCard.objects(iccid=dd.iccid).first()
+                bbc.append(dd.logicalCode + '  ' + s.iccid + '  ' + s.imsi + '  ' + str(s.expireTime))
+            except Exception as e:
+                continue
+    return bbc
+
+
+
+
 
 # 话术
 
