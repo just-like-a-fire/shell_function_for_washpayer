@@ -179,13 +179,11 @@ def is_need_new_sim(arr, callback=None):
                 lastOfflineTime = 0
             
             # 3.检测流量卡充值时间
-            simRechargeRcds = DealerRechargeRecord.objects(__raw__={'name': d.ownerId, 'status':'Paid', 'name':{'$regex':str(_)}})
-            # 循环走完默认拿最后一次的充值时间
-            if simRechargeRcds.count() > 0:
-                for s in simRechargeRcds:
-                    # todo 少数情况有bug, 最好精确匹配
-                    if _ in s.name:
-                        simRechargeTime = s.finishedTime.strftime("%Y-%m-%d")
+            simRechargeRcd = DealerRechargeRecord.objects(
+                __raw__={'dealerId': d.ownerId, 'status': 'Paid', 'name': {'$regex': str(_)}}).order_by('-id').first()
+
+            if simRechargeRcd is not None:
+                    simRechargeTime = simRechargeRcd.finishedTime.strftime("%Y-%m-%d")
             else:
                 simRechargeTime = 0
 
@@ -477,9 +475,23 @@ def find_agent_device_and_sim_status(username):
                 continue
     return bbc
 
+# 查询代理商下所有设备
+def find_agent_device(username):
+    bbc = []
+    a = Agent.objects(username=username).first()
+    if a is None:
+        print 'agent is None'
+        return
 
-
-
+    ds = Dealer.objects(agentId=str(a.id))
+    for _ in ds:
+        dds = Device.objects(ownerId=str(_.id))
+        if dds.count == 0:
+            continue
+        for dd in dds:
+            bbc.append(dd.logicalCode)
+            
+    return bbc
 
 # 话术
 
@@ -510,3 +522,10 @@ def find_agent_device_and_sim_status(username):
 # 客户提现可以提现到银行卡里面, 在后台可以绑定银行卡, 但是只支持对私银行.
 # 对公银行的绑定, 需要客户把对公银行信息以及经销商账号提供给我, 我在后台给客户绑定
 # 提现到账时间: 微信 -> 即时到账, 对私银行 -> 1~3天到账, 对公银行 -> 月底到账一次
+
+# 06 金币和收益不对等关系
+"""
+1. 以前的设备只有脉冲设备, 没有串口设备, 这个时候消耗金币和支付金额就差不多一致, 除非有客户派币, 或者设置的不是1:1的关系
+2. 后来大家都开始做串口设备, 串口设备每次结束的时候会报结束事件, 为了匹配系统数据, 结束的时候也记录了一次消费金币, 这样的话就会发现收益和金币是 1:2 的关系
+3. 而且, 这还不算串口设备的退币, 比如消费3元启动240分钟, 中途退了2元, 这个时候就会记录消费6个金币, 并且原本应该消耗3个金币的账户, 还存在没有消费掉的2个金币, 如果后续的消费正常(没有退费) 等于说客户付了3元, 产生了10个金币的消费
+"""
